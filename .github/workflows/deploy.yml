@@ -1,0 +1,57 @@
+name: deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP setup
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, intl, pdo_mysql
+          coverage: none
+
+      - name: Validate Composer configuration
+        run: composer validate --strict --no-check-publish
+
+      - name: Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Node setup
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Build frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Package production files
+        run: |
+          test -f vendor/vlucas/phpdotenv/src/Repository/RepositoryBuilder.php
+          test -f public/build/manifest.json
+
+      - name: Upload deployment files
+        uses: actions/upload-artifact@v4
+        with:
+          name: fietskompas-deployment
+          path: |
+            vendor/
+            public/build/
+          if-no-files-found: error
+          retention-days: 30
