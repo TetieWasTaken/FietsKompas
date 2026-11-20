@@ -15,7 +15,7 @@ jobs:
     environment: production
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: PHP setup
         uses: shivammathur/setup-php@v2
@@ -31,7 +31,7 @@ jobs:
         run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
       - name: Node setup
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
@@ -47,7 +47,7 @@ jobs:
           test -f public/build/manifest.json
 
       - name: Upload deployment files
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fietskompas-deployment
           path: |
